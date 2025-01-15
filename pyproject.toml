@@ -1,0 +1,7 @@
+[project]
+name = "sptanalysis"
+version = "0.1.0"
+description = "Single Molecule Trajectory Analysis: With MSD and Angle Modules"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["numpy>=2.2.1"]
