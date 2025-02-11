@@ -48,9 +48,18 @@ msd_calc = MSD_Calculations_Track_Dict(
 ensemble_msd = msd_calc.individual_store.ensemble_MSD
 track_msds = msd_calc.individual_store.track_MSD
 ```
-
-### Angle Analysis
-
+Default does not consider bootstrap for errors, rather uses SEM. For bootstrap:
+```python
+msd_calc = MSD_Calculations_Track_Dict(
+    track_dict,
+    pixel_to_um=0.13,
+    frame_to_seconds=0.02,
+    bootstrap=True,
+    bootstrap_samples=0.1,
+    bootstrap_percentile=0.9,
+    bootstrap_num=100,
+)
+```
 ```python
 # Initialize angle calculations
 angle_calc = Track_Calculations_Individual_Dict(
