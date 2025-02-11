@@ -3,8 +3,6 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from .utils.util_functions import dic_union_two
-
 # RANDOM_SEED = 666 #for reproducibility, hail satan
 # #use the RANDOM_SEED for reproducibility
 # np.random.seed(RANDOM_SEED)
@@ -441,7 +439,7 @@ def MSD_Tracks(
     Parameters:
     -----------
     tracks : dict
-        dictionary of tracks, key = track ID, value = [[x,y],...] of coordinates
+        dictionary of tracks, key = track ID, value = [[x,y,z],...] of coordinates
     permutation : bool (default = True, don't change this)
         if permutation == True then the MSD is calculated for all possible permutations of the data
         if permutation == False then the MSD is calculated for the data in the order it is given
@@ -457,7 +455,7 @@ def MSD_Tracks(
 
     KWARGS:
     -------
-    Passed to msd_avgerage_utility() -> (bootstrap:bool=False,bootstrap_samples:float=0.1,bootstrap_percentile:float=0.95,bootstrap_num=100)
+    Passed to msd_avgerage_utility() -> (bootstrap:bool=False, bootstrap_samples:float=0.1, bootstrap_percentile:float=0.95, bootstrap_num=100)
 
     Returns:
     --------
@@ -489,8 +487,7 @@ def MSD_Tracks(
                 value *= conversion_factor
             # calculate the displacements for each track
             disp = MSD_tau(
-                value[:, 0][:max_track_length],
-                value[:, 1][:max_track_length],
+                value[:max_track_length],
                 permutation,
             )
             # lets convert the taus (in the keys of disp) to the desired units
@@ -504,7 +501,12 @@ def MSD_Tracks(
             track_msds[key] = track_msd_temp[0]
             track_msds_error[key] = track_msd_temp[1]
             # unify the ensemble MSD curve dictionary with disp
-            ensemble_disp = dic_union_two(ensemble_disp, disp)
+            for tau, disp_val in disp.items():
+                if tau in ensemble_disp:
+                    ensemble_disp[tau] += list(disp_val)
+                else:
+                    ensemble_disp[tau] = list(disp_val)
+            # ensemble_disp = dic_union_two(ensemble_disp, disp)
 
     # update the ensemble MSD curve dictionary
     ensemble_msd, errors_ensemble_msd = msd_avgerage_utility(ensemble_disp, **kwargs)
@@ -525,7 +527,7 @@ class MSD_Calculations_Track_Dict(Calculation_abc):
         track_dict: dict
             dict of tracks in the form:
             {
-            track_ID: [[x,y],...,[x,y]],
+            track_ID: [[x,y,z, ... ],...,[x,y,z, ...]],
             .
             .
             .
@@ -653,29 +655,35 @@ def combine_track_dicts(dicts):
     for i in dicts:
         # iterate over the keys of the dicts
         for j in i.keys():
+            if j == "ALL":
+                continue
             # iterate over the keys of the dicts
             for k in i[j].keys():
                 # change the key of the dict
                 combined_dict[j][str(track_counter)] = i[j][k]
+                combined_dict["ALL"][str(track_counter)] = i[j][k]
                 track_counter += 1
     return combined_dict
 
 
-def _msd_tau_utility_all(x, y, tau):
+def _msd_tau_utility_all(track, tau):
     """Documentation for _msd_tau_utility_all
 
     Parameters:
     -----------
+    track: track consisting of  [x,y,z] pairs
     x : array
         x positions of the data
     y : array
         y positions of the data
+    z : array
+        z positions of the data
     tau : int
         time lag for the MSD calculation
 
     Returns:
     --------
-    displacements : array, shape (n,2)
+    displacements : array, shape (n,3)
         array of displacements for all possible permutations of the data
 
     Notes:
@@ -683,16 +691,16 @@ def _msd_tau_utility_all(x, y, tau):
     For the theory behind this see https://web.mit.edu/savin/Public/.Tutorial_v1.2/Concepts.html#A1
     """
     # find the total displacements possible, from https://web.mit.edu/savin/Public/.Tutorial_v1.2/Concepts.html#A1
-    total_displacements = len(x) - tau
+    total_displacements = len(track) - tau
     # create an array to store the displacements
-    displacements = np.zeros((total_displacements, 2))
+    displacements = np.zeros((total_displacements, len(track[0])))
     # loop through the displacements
     for i in range(total_displacements):
         # calculate the displacements
         # make sure that i+tau is less than the length of the data
-        if i + tau < len(x):
-            displacements[i] = np.array([x[i + tau] - x[i], y[i + tau] - y[i]])
-    # return the displacements as (x,y) pairs
+        if i + tau < len(track):
+            displacements[i] = np.array(track[i + tau] - track[i])
+    # return the displacements as (x,y,z) pairs
     return displacements
 
 
@@ -704,15 +712,18 @@ def _msd_tau_utility_single(x, y, tau):
     return np.array([x_dis, y_dis]).T
 
 
-def MSD_tau_utility(x, y, tau=1, permutation=True):
+def MSD_tau_utility(track, tau=1, permutation=True):
     """Documentation for MSD_tau_utility
 
     Parameters:
     -----------
+    track: track consisting of  [x,y,z] pairs
     x : array
         x positions of the data
     y : array
         y positions of the data
+    z : array
+        z positions of the data
     tau : int
         time lag for the MSD calculation
     permutation : bool
@@ -730,23 +741,27 @@ def MSD_tau_utility(x, y, tau=1, permutation=True):
     # if permutation == True then the MSD is calculated for all possible permutations of the data
     # if permutation == False then the MSD is calculated for the data in the order it is given
     if permutation:
-        displacements = _msd_tau_utility_all(x, y, tau)
+        displacements = _msd_tau_utility_all(track, tau)
     else:
+        raise ValueError("Don't use non-permutations for the MSD")
         # dont use this condition, its wrong
-        displacements = _msd_tau_utility_single(x, y, tau)
+        # displacements = _msd_tau_utility_single(x, y, tau)
 
     return displacements
 
 
-def MSD_tau(x, y, permutation=True):
+def MSD_tau(track, permutation=True):
     """Documentation for MSD_tau
 
     Parameters:
     -----------
+    track: track consisting of  [x,y,z] pairs
     x : array
         x positions of the data
     y : array
         y positions of the data
+    z : array
+        z positions of the data
     permutation : bool
         if permutation == True then the MSD is calculated for all possible permutations of the data
         if permutation == False then the MSD is calculated for the data in the order it is given
@@ -754,17 +769,17 @@ def MSD_tau(x, y, permutation=True):
     Returns:
     --------
     displacements : dict
-        dictionary of displacements for each time lag, key = time lag, value = array of displacements, shape (n,2)
+        dictionary of displacements for each time lag, key = time lag, value = array of displacements, shape (n,3)
 
     """
 
     # find the maximum time lag possible
-    max_tau = len(x) - 1
+    max_tau = len(track) - 1
     # create a dictionary to store the displacements for each time lag
     displacements = {}
     # loop through the time lags
     for tau in range(1, max_tau + 1):
         # calculate the displacements for each time lag
-        displacements[tau] = MSD_tau_utility(x, y, tau, permutation)
+        displacements[tau] = MSD_tau_utility(track, tau, permutation)
     # return the displacements
     return displacements

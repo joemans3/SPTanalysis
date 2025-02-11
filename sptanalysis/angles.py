@@ -5,7 +5,6 @@ import numpy as np
 from .msd import (
     Calculation_abc,
 )
-from .utils.util_functions import dic_union_two
 
 
 class Angle_Storage:
@@ -213,10 +212,17 @@ def Angle_track(
                 angles = trajectory_angles(np.array(tau_points))
                 # store the angles
                 tau_dict[tau] = angles
+
+                # for each tau store the ensemble angles
+                if tau in ensemble_angles:
+                    ensemble_angles[tau] += list(angles)
+                else:
+                    ensemble_angles[tau] = list(angles)
             # store the track angles
             track_angles[track_ID] = tau_dict
             # for each tau store the ensemble angles
-            ensemble_angles = dic_union_two(ensemble_angles, tau_dict)
+            # ensemble_angles = dic_union_two(ensemble_angles, tau_dict)
+
     # store the ensemble angles
     return_dict["ensemble_angles"] = ensemble_angles
     # store the track angles

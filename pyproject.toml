@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Single Molecule Trajectory Analysis: With MSD and Angle Modules"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["numpy>=2.2.1"]
+dependencies = [
+    "numpy>=2.2.1",
+    "scipy>=1.15.1",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -16,3 +19,8 @@ venv = ".venv"
 ignore = ["."]
 [tool.hatch.build.targets.wheel]
 packages = ["sptanalysis"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+]
