@@ -73,6 +73,11 @@ angle_calc = Track_Calculations_Individual_Dict(
 ensemble_angles = angle_calc.individual_store.ensemble_angles
 track_angles = angle_calc.individual_store.track_angles
 
+# errors for the above
+ensemble_angles_error = angle_calc.individual_store.ensemble_angles_error
+track_angles_error = angle_calc.individual_store.track_angles_error
+
+
 # Calculate asymmetry metric
 asymmetry = asymmetry_metric(
     angle_distribution=ensemble_angles[0],  # angles at tau=0
