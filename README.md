@@ -110,6 +110,12 @@ track_dict = {
 }
 ```
 
+### MSD Analysis Output
+```python
+ensemble_msd = {"tau_value": msd_value, ... }
+track_msd = {"track_ID": {"tau_value": msd_value, ...}, ... }
+```
+Similar Structure for the errors.
 
 ### Angle Analysis Output
 ```python
