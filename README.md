@@ -1,5 +1,6 @@
-# MSD and Angle Analysis Module
-
+# SPT(Single Particle Tracking)Analysis
+![Alt text](./extras/logo/spt-analysis-logo-v2.svg)
+<img src="./extras/logo/spt-analysis-logo-v2.svg">
 A Python module for calculating and analyzing Mean Square Displacement (MSD) and trajectory angles from particle tracking data. This module provides robust tools for both ensemble and individual track analysis, with support for various statistical calculations and data transformations.
 
 ## Features
