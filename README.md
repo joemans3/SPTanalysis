@@ -24,7 +24,7 @@ A Python module for calculating and analyzing Mean Square Displacement (MSD) and
 
 1. Run:
 ```bash
-pip install SPTAnalysis
+pip install sptanalysis
 ```
 
 ## Usage
