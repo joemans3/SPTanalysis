@@ -367,11 +367,11 @@ def msd_avgerage_utility(
             # the MSD is the average of the squared displacements
             # the squared displacements are the sum of the squared components of the displacements
             # divide by the number of dimensions to get the average of the squared displacements
-            msd[key] = np.mean(np.sum(np.array(value) ** 2, axis=1))
+            msd[key] = np.nanmean(np.sum(np.array(value) ** 2, axis=1))
             # calculate the error in the MSD for each time lag
             # the error in the MSD is the standard deviation of the standard error of the mean of the squared displacements
             # the standard error of the mean of the squared displacements is the standard deviation of the squared displacements divided by the square root of the number of displacements
-            error_msd[key] = np.std(np.sum(np.array(value) ** 2, axis=1)) / np.sqrt(
+            error_msd[key] = np.nanstd(np.sum(np.array(value) ** 2, axis=1)) / np.sqrt(
                 len(value)
             )
     else:
@@ -395,10 +395,10 @@ def msd_avgerage_utility(
                 print(
                     "WARNING: number_bootstrap_displacements is less than 10, using all displacements"
                 )
-                msd[key] = np.mean(np.sum(np.array(value) ** 2, axis=1))
-                error_msd[key] = np.std(np.sum(np.array(value) ** 2, axis=1)) / np.sqrt(
-                    len(value)
-                )
+                msd[key] = np.nanmean(np.sum(np.array(value) ** 2, axis=1))
+                error_msd[key] = np.nanstd(
+                    np.sum(np.array(value) ** 2, axis=1)
+                ) / np.sqrt(len(value))
                 continue
 
             # get the number of bootstrap samples
@@ -411,11 +411,11 @@ def msd_avgerage_utility(
                 bootstrap_displacements = np.random.choice(
                     value_indexes, number_bootstrap_displacements, replace=False
                 )
-                msd_values[i] = np.mean(
+                msd_values[i] = np.nanmean(
                     np.sum((np.array(value)[bootstrap_displacements]) ** 2, axis=1)
                 )
             # calculate the MSD for each time lag
-            msd[key] = np.mean(msd_values)
+            msd[key] = np.nanmean(msd_values)
             # calculate the error in the MSD for each time lag
             error_msd[key] = np.abs(
                 np.percentile(msd_values, bootstrap_percentile)
