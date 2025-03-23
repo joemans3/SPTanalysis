@@ -431,7 +431,7 @@ def MSD_Tracks(
     conversion_factor=None,
     tau_conversion_factor=None,
     min_track_length=1,
-    max_track_length=10,
+    max_track_length=None,
     **kwargs,
 ):  # return_type="msd_curves",verbose=False,conversion_factor=None):
     """Documentation for MSD_Tracks
